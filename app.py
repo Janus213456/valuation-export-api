@@ -2,15 +2,18 @@ from io import BytesIO
 from pathlib import Path
 from typing import List, Optional
 import base64
+from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
 from pydantic import BaseModel
 from openpyxl import load_workbook
 
 app = FastAPI(title="Valuation Export API")
 
 TEMPLATE_FILE = Path("Master_Valuation_Template_Clean_And_Final.xlsx")
+GENERATED_DIR = Path("generated_files")
+GENERATED_DIR.mkdir(exist_ok=True)
 
 
 class ExportRow(BaseModel):
@@ -56,15 +59,12 @@ def build_workbook_bytes(payload: ExportValuationRequest) -> tuple[bytes, str]:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load template: {str(e)}")
 
-    # Subject Property
     ws["C4"] = payload.subject_property.address
     ws["D22"] = payload.subject_property.size_m2
 
-    # Step 2 rows -> Excel rows 8–10
     for idx, row in enumerate(payload.step2_rows[:3], start=8):
         write_row(ws, idx, row)
 
-    # Step 3 rows -> Excel rows 15–17
     for idx, row in enumerate(payload.step3_rows[:3], start=15):
         write_row(ws, idx, row)
 
@@ -95,7 +95,6 @@ def export_valuation(payload: ExportValuationRequest):
 @app.post("/export/valuation/gpt")
 def export_valuation_gpt(payload: ExportValuationRequest):
     file_bytes, safe_filename = build_workbook_bytes(payload)
-
     base64_content = base64.b64encode(file_bytes).decode("utf-8")
 
     return {
@@ -105,7 +104,42 @@ def export_valuation_gpt(payload: ExportValuationRequest):
                 "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 "content": base64_content
             }
-        ],
-        "filename": safe_filename,
-        "status": "success"
+        ]
     }
+
+
+@app.post("/export/valuation/gpt-link")
+def export_valuation_gpt_link(payload: ExportValuationRequest):
+    file_bytes, safe_filename = build_workbook_bytes(payload)
+
+    unique_name = f"{uuid4()}_{safe_filename}"
+    file_path = GENERATED_DIR / unique_name
+    file_path.write_bytes(file_bytes)
+
+    download_url = f"https://valuation-export-api.onrender.com/download/{unique_name}"
+
+    return {
+        "openaiFileResponse": [
+            {
+                "name": safe_filename,
+                "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "download_link": download_url
+            }
+        ]
+    }
+
+
+@app.get("/download/{file_name}")
+def download_generated_file(file_name: str):
+    file_path = GENERATED_DIR / file_name
+
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found.")
+
+    original_name = file_name.split("_", 1)[1] if "_" in file_name else file_name
+
+    return FileResponse(
+        path=file_path,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        filename=original_name
+    )
