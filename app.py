@@ -2,14 +2,17 @@ from io import BytesIO
 from pathlib import Path
 from typing import List, Optional
 import base64
+from urllib.parse import quote
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse, FileResponse
 from pydantic import BaseModel
 from openpyxl import load_workbook
+from certificate_api import router as certificate_router
 
 app = FastAPI(title="Valuation Export API")
+app.include_router(certificate_router)
 
 TEMPLATE_FILE = Path("Master_Valuation_Template_Clean_And_Final.xlsx")
 GENERATED_DIR = Path("generated_files")
@@ -116,7 +119,8 @@ def export_valuation_gpt_link(payload: ExportValuationRequest):
     file_path = GENERATED_DIR / unique_name
     file_path.write_bytes(file_bytes)
 
-    download_url = f"https://valuation-export-api.onrender.com/download/{unique_name}"
+    encoded_name = quote(unique_name)
+    download_url = f"https://valuation-export-api.onrender.com/download/{encoded_name}"
 
     return {
         "openaiFileResponse": [
