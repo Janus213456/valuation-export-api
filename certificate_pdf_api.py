@@ -45,19 +45,19 @@ def build_certificate_pdf(payload: ExportCertificatePdfRequest) -> tuple[bytes, 
     c = canvas.Canvas(packet, pagesize=A4)
 
     # First-pass coordinates. We will adjust after the next test.
-    draw_centered(c, payload.prepared_for, 385, 560, 10)
-    draw_centered(c, payload.property_address, 385, 505, 10)
+    draw_centered(c, payload.prepared_for, 385 - 57, 615 + 57, 10)
+    draw_centered(c, payload.property_address, 385 - 57, 560 + 57, 10)
 
     market_range = f"{payload.market_estimate_low} to {payload.market_estimate_high}"
-    draw_centered(c, market_range, 385, 390, 12)
+    draw_centered(c, market_range, 385, 455 + 57, 12)
 
-    draw_centered(c, payload.recommended_launch_price, 385, 310, 14)
+    draw_centered(c, payload.recommended_launch_price, 385, 345 + 57, 14)
 
-    draw_centered(c, payload.property_practitioner, 205, 170, 10)
-    draw_centered(c, payload.broker_owner_manager, 445, 170, 10)
+    draw_centered(c, payload.property_practitioner, 205, 205, 10)
+    draw_centered(c, payload.broker_owner_manager, 445, 205, 10)
 
-    draw_centered(c, payload.certificate_date, 205, 95, 10)
-    draw_centered(c, payload.office_name, 445, 95, 10)
+    draw_centered(c, payload.certificate_date, 205, 130, 10)
+    draw_centered(c, payload.office_name, 445, 130, 10)
 
     c.save()
     packet.seek(0)
