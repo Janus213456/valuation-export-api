@@ -29,7 +29,7 @@ class ExportCertificatePdfRequest(BaseModel):
     property_practitioner: str
     broker_owner_manager: str
     certificate_date: str
-    office_name: str
+    
 
 
 def draw_centered(c, text, x, y, font_size=10):
@@ -57,7 +57,7 @@ def build_certificate_pdf(payload: ExportCertificatePdfRequest) -> tuple[bytes, 
     draw_centered(c, payload.broker_owner_manager, 445, 205, 10)
 
     draw_centered(c, payload.certificate_date, 195, 130, 10)
-    draw_centered(c, payload.office_name, 445, 130, 10)
+ 
 
     c.save()
     packet.seek(0)
