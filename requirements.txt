@@ -3,3 +3,5 @@ uvicorn
 openpyxl
 python-multipart
 python-docx
+reportlab
+pypdf

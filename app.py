@@ -10,9 +10,11 @@ from fastapi.responses import StreamingResponse, FileResponse
 from pydantic import BaseModel
 from openpyxl import load_workbook
 from certificate_api import router as certificate_router
+from certificate_pdf_api import router as certificate_pdf_router
 
 app = FastAPI(title="Valuation Export API")
 app.include_router(certificate_router)
+app.include_router(certificate_pdf_router)
 
 TEMPLATE_FILE = Path("Master_Valuation_Template_Clean_And_Final.xlsx")
 GENERATED_DIR = Path("generated_files")
