@@ -49,13 +49,14 @@ def build_certificate_pdf(payload: ExportCertificatePdfRequest) -> tuple[bytes, 
     draw_centered(c, payload.property_address, 321, 508, 10)
 
     market_range = f"{payload.market_estimate_low} to {payload.market_estimate_high}"
-    draw_centered(c, market_range, 329, 413, 12)
+    draw_centered(c, market_range, 322, 413, 12)
 
-    draw_centered(c, payload.recommended_launch_price, 329, 317, 14)
-    draw_centered(c, payload.property_practitioner, 205, 205, 10)
+    draw_centered(c, payload.recommended_launch_price, 322, 317, 14)
+
+    draw_centered(c, payload.property_practitioner, 195, 205, 10)
     draw_centered(c, payload.broker_owner_manager, 445, 205, 10)
 
-    draw_centered(c, payload.certificate_date, 205, 130, 10)
+    draw_centered(c, payload.certificate_date, 195, 130, 10)
     draw_centered(c, payload.office_name, 445, 130, 10)
 
     c.save()
